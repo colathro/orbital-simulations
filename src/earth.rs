@@ -13,29 +13,12 @@ pub fn setup_earth(
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let texture_handle = asset_server.load("textures/earthmap1k.png");
-
-    let material_handle = materials.add(StandardMaterial {
-        base_color_texture: Some(texture_handle.clone()),
-        alpha_mode: AlphaMode::Blend,
-        unlit: true,
-        ..default()
-    });
-
     commands
-        .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::UVSphere {
-                radius: RADIUS.clone(),
-                sectors: 36,
-                stacks: 36,
-            })),
-            material: material_handle,
-            transform: Transform::from_xyz(0.0, 0.0, 0.0),
-            ..default()
-        })
+        .spawn_bundle(PbrBundle { ..default() })
         .insert(Earth)
         .insert(Focused)
         .with_children(|earth| {
+            earth.spawn_scene(asset_server.load("models/P-05W4LD.glb#Scene0"));
             // spawn debug line
             earth.spawn_bundle(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Box {
@@ -50,6 +33,7 @@ pub fn setup_earth(
                     base_color: Color::rgb(0.5, 1., 0.),
                     ..default()
                 }),
+                global_transform: GlobalTransform { ..default() },
                 ..default()
             });
         });
