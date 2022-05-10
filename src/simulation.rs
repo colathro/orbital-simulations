@@ -13,6 +13,9 @@ pub struct Gravity;
 #[derive(Component)]
 pub struct Mass;
 
+#[derive(Component)]
+pub struct AverageRadius(pub f32);
+
 /// ECS Stage that represents when the simulation step is calculated.
 #[derive(Debug, Hash, PartialEq, Eq, Clone, StageLabel)]
 struct SimulationUpdateStage;

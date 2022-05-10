@@ -1,0 +1,2 @@
+pub const SUN_RADIUS: f32 = 696000000.;
+pub const DISTANCE_FROM_SUN: f32 = 150000000000.;

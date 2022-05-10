@@ -10,6 +10,7 @@ use simulation::SimulationPlugin;
 mod camera;
 mod earth;
 mod simulation;
+mod sun;
 
 fn main() {
     App::new()
@@ -23,10 +24,6 @@ fn main() {
         .insert_resource(WgpuSettings {
             features: WgpuFeatures::POLYGON_MODE_LINE,
             ..default()
-        })
-        .insert_resource(AmbientLight {
-            color: Color::WHITE,
-            brightness: 1.0 / 5.0f32,
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(SimulationPlugin)

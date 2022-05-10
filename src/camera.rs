@@ -3,6 +3,9 @@ use bevy::{
     prelude::*,
 };
 
+use crate::simulation::AverageRadius;
+use crate::sun::{DISTANCE_FROM_SUN, SUN_RADIUS};
+
 /// Sample code taken from: https://bevy-cheatbook.github.io/cookbook/pan-orbit-camera.html
 /// Edited for my needs :D
 
@@ -34,8 +37,9 @@ pub fn pan_orbit_camera(
     mut ev_motion: EventReader<MouseMotion>,
     mut ev_scroll: EventReader<MouseWheel>,
     input_mouse: Res<Input<MouseButton>>,
+    input_keyboard: Res<Input<KeyCode>>,
     mut query: Query<(&mut PanOrbitCamera, &mut Transform)>,
-    focused_query: Query<&GlobalTransform, With<Focused>>,
+    focused_query: Query<(&GlobalTransform, &AverageRadius), With<Focused>>,
 ) {
     // change input mapping for orbit and panning here
     let orbit_button = MouseButton::Left;
@@ -57,6 +61,19 @@ pub fn pan_orbit_camera(
     }
 
     for (mut orbit_cam, mut transform) in query.iter_mut() {
+        match focused_query.get_single() {
+            Ok((focused_transform, focused_average_radius)) => {
+                orbit_cam.focus = focused_transform.translation;
+                let _ = transform.looking_at(focused_transform.translation, Vec3::Y);
+                if input_keyboard.pressed(KeyCode::Space) {
+                    transform.translation = focused_transform.translation;
+                    orbit_cam.radius = focused_average_radius.0 * 4.;
+                    scroll += 0.000001;
+                }
+            }
+            Err(_) => {}
+        }
+
         if orbit_button_changed {
             // only check for upside down when orbiting started or ended this frame
             // if the camera is "upside" down, panning horizontally would be inverted, so invert the input to make it correct
@@ -96,13 +113,6 @@ pub fn pan_orbit_camera(
             transform.translation =
                 orbit_cam.focus + rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, orbit_cam.radius));
         }
-
-        match focused_query.get_single() {
-            Ok(transform) => {
-                let _ = transform.looking_at(transform.translation, Vec3::Y);
-            }
-            Err(_) => {}
-        }
     }
 }
 
@@ -114,16 +124,15 @@ fn get_primary_window_size(windows: &Res<Windows>) -> Vec2 {
 
 /// Spawn a camera like this
 pub fn spawn_camera(mut commands: Commands) {
-    let translation = Vec3::new(2. * 6371000., 0., 0.);
-    let radius = translation.length();
-
     commands
         .spawn_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_translation(translation).looking_at(Vec3::ZERO, Vec3::Y),
-            ..Default::default()
+            camera: Camera {
+                far: DISTANCE_FROM_SUN * 2.,
+                ..default()
+            },
+            ..default()
         })
         .insert(PanOrbitCamera {
-            radius,
             ..Default::default()
         });
 }
