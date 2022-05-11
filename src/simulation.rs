@@ -5,6 +5,9 @@ use bevy::{
 
 const LABEL: &str = "SIMULATION_TIMESTEP";
 
+#[derive(Component)]
+pub struct Simulated(pub String);
+
 /// Entities with this component are targeted by the gravity caluclation system.
 #[derive(Component)]
 pub struct Gravity;

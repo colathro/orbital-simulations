@@ -3,8 +3,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::simulation::AverageRadius;
-use crate::sun::{DISTANCE_FROM_SUN, SUN_RADIUS};
+use crate::{earth::DISTANCE_FROM_SUN, simulation::AverageRadius};
 
 /// Sample code taken from: https://bevy-cheatbook.github.io/cookbook/pan-orbit-camera.html
 /// Edited for my needs :D
@@ -135,4 +134,6 @@ pub fn spawn_camera(mut commands: Commands) {
         .insert(PanOrbitCamera {
             ..Default::default()
         });
+
+    commands.spawn_bundle(UiCameraBundle::default());
 }

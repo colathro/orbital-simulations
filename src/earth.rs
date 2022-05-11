@@ -1,14 +1,29 @@
 use crate::camera::Focused;
-use crate::simulation::AverageRadius;
-use crate::sun::{DISTANCE_FROM_SUN, SUN_RADIUS};
+use crate::simulation::{AverageRadius, Simulated};
+use crate::sun::SUN_RADIUS;
 use bevy::prelude::*;
 use bevy::render::view::VisibleEntities;
 
+/// Approximate radius of the earth in meters.
 const RADIUS: f32 = 6371000.;
+
+/// Approximate circumference of the earth in meters.
 const CIRCUMFERENCE: f32 = 40030173.;
+
+/// Approximate mass of the earth in kg.
+const MASS: f32 = 6000000000000000000000000.0;
+
+/// Approximate distance from the sun to earth in meters.
+pub const DISTANCE_FROM_SUN: f32 = 150000000000.;
 
 #[derive(Component)]
 pub struct Earth;
+
+pub fn rotate_earth(mut earth_query: Query<&mut Transform, With<Earth>>) {
+    for mut transform in earth_query.iter_mut() {
+        transform.rotation = transform.rotation * Quat::from_rotation_y(0.001);
+    }
+}
 
 pub fn setup_earth(
     mut commands: Commands,
@@ -16,25 +31,32 @@ pub fn setup_earth(
     asset_server: Res<AssetServer>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::UVSphere {
-            radius: SUN_RADIUS,
+    commands
+        .spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::UVSphere {
+                radius: SUN_RADIUS,
+                ..default()
+            })),
+            material: materials.add(StandardMaterial {
+                base_color: Color::YELLOW,
+                ..default()
+            }),
             ..default()
-        })),
-        material: materials.add(StandardMaterial {
-            base_color: Color::YELLOW,
-            ..default()
-        }),
-        ..default()
-    });
+        })
+        .insert(Simulated("Sun".to_string()));
 
     let earth = commands
         .spawn_bundle(PbrBundle {
-            transform: Transform::from_xyz(DISTANCE_FROM_SUN, 0., 0.),
+            transform: Transform {
+                translation: Vec3::new(DISTANCE_FROM_SUN, 0., 0.),
+                rotation: Quat::from_rotation_z(0.4101524),
+                ..default()
+            },
             ..default()
         })
         .insert(Earth)
         .insert(Focused)
+        .insert(Simulated("Earth".to_string()))
         .insert(AverageRadius(RADIUS))
         .with_children(|earth| {
             earth.spawn_scene(asset_server.load("models/P-05W4LD.glb#Scene0"));

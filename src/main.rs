@@ -4,13 +4,15 @@ use bevy::{
 };
 
 use camera::{pan_orbit_camera, spawn_camera};
-use earth::setup_earth;
+use earth::{rotate_earth, setup_earth};
 use simulation::SimulationPlugin;
+use ui::UIPlugin;
 
 mod camera;
 mod earth;
 mod simulation;
 mod sun;
+mod ui;
 
 fn main() {
     App::new()
@@ -27,9 +29,11 @@ fn main() {
         })
         .add_plugins(DefaultPlugins)
         .add_plugin(SimulationPlugin)
+        .add_plugin(UIPlugin)
         .add_startup_system(setup_earth)
         .add_startup_system(spawn_camera)
         .add_system(pan_orbit_camera)
+        .add_system(rotate_earth)
         .run();
 }
 
