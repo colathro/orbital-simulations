@@ -32,17 +32,11 @@ pub fn setup_earth(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     commands
-        .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::UVSphere {
-                radius: SUN_RADIUS,
-                ..default()
-            })),
-            material: materials.add(StandardMaterial {
-                base_color: Color::YELLOW,
-                ..default()
-            }),
-            ..default()
+        .spawn_bundle(PbrBundle { ..default() })
+        .with_children(|sun| {
+            sun.spawn_scene(asset_server.load("models/SUN.glb#Scene0"));
         })
+        .insert(AverageRadius(SUN_RADIUS))
         .insert(Simulated("Sun".to_string()));
 
     let earth = commands
@@ -55,9 +49,9 @@ pub fn setup_earth(
             ..default()
         })
         .insert(Earth)
-        .insert(Focused)
         .insert(Simulated("Earth".to_string()))
         .insert(AverageRadius(RADIUS))
+        .insert(Focused)
         .with_children(|earth| {
             earth.spawn_scene(asset_server.load("models/P-05W4LD.glb#Scene0"));
             // spawn debug line

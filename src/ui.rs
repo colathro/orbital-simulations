@@ -13,6 +13,9 @@ struct FpsText;
 #[derive(Component)]
 struct PositionText;
 
+#[derive(Component)]
+struct RootNode;
+
 /// Plugin used to create and update UI components.
 pub struct UIPlugin;
 
@@ -27,38 +30,55 @@ impl Plugin for UIPlugin {
 
 fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
-        .spawn_bundle(TextBundle {
+        .spawn_bundle(NodeBundle {
             style: Style {
-                align_self: AlignSelf::FlexEnd,
                 flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::FlexEnd,
+                margin: Rect {
+                    left: Val::Px(20.),
+                    right: Val::Px(20.),
+                    top: Val::Px(20.),
+                    bottom: Val::Px(20.),
+                },
                 ..default()
             },
-            // Use `Text` directly
-            text: Text {
-                // Construct a `Vec` of `TextSection`s
-                sections: vec![
-                    TextSection {
-                        value: "FPS: ".to_string(),
-                        style: TextStyle {
-                            font: asset_server.load("fonts/AstroSpace.ttf"),
-                            font_size: 24.0,
-                            color: Color::WHITE,
-                        },
-                    },
-                    TextSection {
-                        value: "".to_string(),
-                        style: TextStyle {
-                            font: asset_server.load("fonts/AstroSpace.ttf"),
-                            font_size: 24.0,
-                            color: Color::GOLD,
-                        },
-                    },
-                ],
-                ..default()
-            },
+            color: Color::NONE.into(),
             ..default()
         })
-        .insert(FpsText);
+        .insert(RootNode)
+        .with_children(|parent| {
+            parent
+                .spawn_bundle(TextBundle {
+                    style: Style {
+                        align_self: AlignSelf::FlexStart,
+                        ..default()
+                    },
+                    text: Text {
+                        // Construct a `Vec` of `TextSection`s
+                        sections: vec![
+                            TextSection {
+                                value: "FPS: ".to_string(),
+                                style: TextStyle {
+                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font_size: 24.0,
+                                    color: Color::WHITE,
+                                },
+                            },
+                            TextSection {
+                                value: "".to_string(),
+                                style: TextStyle {
+                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font_size: 24.0,
+                                    color: Color::GOLD,
+                                },
+                            },
+                        ],
+                        ..default()
+                    },
+                    ..default()
+                })
+                .insert(FpsText);
+        });
 }
 
 fn update_fps(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<FpsText>>) {
@@ -77,6 +97,7 @@ fn update_positions_of_gravity_components(
     asset_server: Res<AssetServer>,
     gravity_query: Query<(&Transform, &Simulated)>,
     mut text_query: Query<&mut Text, With<PositionText>>,
+    mut root_query: Query<Entity, With<RootNode>>,
 ) {
     let mut entities: HashMap<String, Transform> = HashMap::new();
 
@@ -95,55 +116,61 @@ fn update_positions_of_gravity_components(
         }
     }
 
+    let root_node = match root_query.get_single_mut() {
+        Ok(root_node) => root_node,
+        Err(_) => return,
+    };
+
     for (simulated, _transform) in entities.iter() {
-        commands
-            .spawn_bundle(TextBundle {
-                style: Style {
-                    align_self: AlignSelf::FlexEnd,
-                    flex_direction: FlexDirection::Column,
+        commands.entity(root_node).with_children(|parent| {
+            parent
+                .spawn_bundle(TextBundle {
+                    style: Style {
+                        align_self: AlignSelf::FlexStart,
+                        ..default()
+                    },
+                    // Use `Text` directly
+                    text: Text {
+                        // Construct a `Vec` of `TextSection`s
+                        sections: vec![
+                            TextSection {
+                                value: format!("{}", simulated),
+                                style: TextStyle {
+                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font_size: 24.0,
+                                    color: Color::WHITE,
+                                },
+                            },
+                            TextSection {
+                                value: "-".to_string(),
+                                style: TextStyle {
+                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font_size: 24.0,
+                                    color: Color::RED,
+                                },
+                            },
+                            TextSection {
+                                value: "-".to_string(),
+                                style: TextStyle {
+                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font_size: 24.0,
+                                    color: Color::GREEN,
+                                },
+                            },
+                            TextSection {
+                                value: "-".to_string(),
+                                style: TextStyle {
+                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font_size: 24.0,
+                                    color: Color::BLUE,
+                                },
+                            },
+                        ],
+                        ..default()
+                    },
                     ..default()
-                },
-                // Use `Text` directly
-                text: Text {
-                    // Construct a `Vec` of `TextSection`s
-                    sections: vec![
-                        TextSection {
-                            value: format!("{}", simulated),
-                            style: TextStyle {
-                                font: asset_server.load("fonts/AstroSpace.ttf"),
-                                font_size: 24.0,
-                                color: Color::WHITE,
-                            },
-                        },
-                        TextSection {
-                            value: "-".to_string(),
-                            style: TextStyle {
-                                font: asset_server.load("fonts/AstroSpace.ttf"),
-                                font_size: 24.0,
-                                color: Color::RED,
-                            },
-                        },
-                        TextSection {
-                            value: "-".to_string(),
-                            style: TextStyle {
-                                font: asset_server.load("fonts/AstroSpace.ttf"),
-                                font_size: 24.0,
-                                color: Color::GREEN,
-                            },
-                        },
-                        TextSection {
-                            value: "-".to_string(),
-                            style: TextStyle {
-                                font: asset_server.load("fonts/AstroSpace.ttf"),
-                                font_size: 24.0,
-                                color: Color::BLUE,
-                            },
-                        },
-                    ],
-                    ..default()
-                },
-                ..default()
-            })
-            .insert(PositionText);
+                })
+                .insert(PositionText);
+        });
     }
 }
