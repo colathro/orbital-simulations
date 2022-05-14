@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::{earth::DISTANCE_FROM_SUN, simulation::AverageRadius};
+use crate::{earth::DISTANCE_FROM_SUN, simulation::PhysicalProperties};
 
 /// Sample code taken from: https://bevy-cheatbook.github.io/cookbook/pan-orbit-camera.html
 /// Edited for my needs :D
@@ -38,7 +38,7 @@ pub fn pan_orbit_camera(
     input_mouse: Res<Input<MouseButton>>,
     input_keyboard: Res<Input<KeyCode>>,
     mut query: Query<(&mut PanOrbitCamera, &mut Transform)>,
-    focused_query: Query<(&GlobalTransform, &AverageRadius), With<Focused>>,
+    focused_query: Query<(&GlobalTransform, &PhysicalProperties), With<Focused>>,
 ) {
     // change input mapping for orbit and panning here
     let orbit_button = MouseButton::Left;
@@ -61,12 +61,12 @@ pub fn pan_orbit_camera(
 
     for (mut orbit_cam, mut transform) in query.iter_mut() {
         match focused_query.get_single() {
-            Ok((focused_transform, focused_average_radius)) => {
+            Ok((focused_transform, physical_properties)) => {
                 orbit_cam.focus = focused_transform.translation;
                 let _ = transform.looking_at(focused_transform.translation, Vec3::Y);
                 if input_keyboard.pressed(KeyCode::Space) {
                     transform.translation = focused_transform.translation;
-                    orbit_cam.radius = focused_average_radius.0 * 4.;
+                    orbit_cam.radius = physical_properties.estimated_radius * 4.;
                     scroll += 0.000001;
                 }
             }
