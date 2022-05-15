@@ -64,10 +64,10 @@ pub fn pan_orbit_camera(
             Ok((focused_transform, physical_properties)) => {
                 orbit_cam.focus = focused_transform.translation;
                 let _ = transform.looking_at(focused_transform.translation, Vec3::Y);
+
                 if input_keyboard.pressed(KeyCode::Space) {
-                    transform.translation = focused_transform.translation;
-                    orbit_cam.radius = physical_properties.estimated_radius.to_f32() * 4.;
                     scroll += 0.000001;
+                    orbit_cam.radius = physical_properties.estimated_radius.to_f32() * 4.;
                 }
             }
             Err(_) => {}
@@ -104,14 +104,12 @@ pub fn pan_orbit_camera(
             orbit_cam.radius = f32::max(orbit_cam.radius, 0.05);
         }
 
-        if any {
-            // emulating parent/child to make the yaw/y-axis rotation behave like a turntable
-            // parent = x and y rotation
-            // child = z-offset
-            let rot_matrix = Mat3::from_quat(transform.rotation);
-            transform.translation =
-                orbit_cam.focus + rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, orbit_cam.radius));
-        }
+        // emulating parent/child to make the yaw/y-axis rotation behave like a turntable
+        // parent = x and y rotation
+        // child = z-offset
+        let rot_matrix = Mat3::from_quat(transform.rotation);
+        transform.translation =
+            orbit_cam.focus + rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, orbit_cam.radius));
     }
 }
 

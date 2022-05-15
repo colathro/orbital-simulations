@@ -1,5 +1,5 @@
 use crate::camera::Focused;
-use crate::simulation::{PhysicalProperties, Simulated};
+use crate::simulation::{HPVec3, PhysicalProperties, Simulated};
 use bevy::prelude::*;
 use rug::Float;
 
@@ -18,10 +18,11 @@ pub const DISTANCE_FROM_SUN: f32 = 150_000_000_000.;
 pub struct Earth;
 
 pub fn setup_earth(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let translation = Vec3::new(DISTANCE_FROM_SUN, 0., 0.);
     commands
         .spawn_bundle(PbrBundle {
             transform: Transform {
-                translation: Vec3::new(DISTANCE_FROM_SUN, 0., 0.),
+                translation: translation,
                 rotation: Quat::from_rotation_z(0.4101524),
                 scale: Vec3::new(RADIUS * 2., RADIUS * 2., RADIUS * 2.),
                 ..default()
@@ -33,7 +34,8 @@ pub fn setup_earth(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(PhysicalProperties {
             mass: Float::with_val(128, MASS.clone()),
             estimated_radius: Float::with_val(128, RADIUS.clone()),
-            acceleration: Vec3::ZERO,
+            acceleration: HPVec3::zero(),
+            translation: HPVec3::from_vec3(&translation),
         })
         .insert(Focused)
         .with_children(|earth| {

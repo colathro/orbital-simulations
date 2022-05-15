@@ -5,6 +5,8 @@ const LABEL: &str = "SIMULATION_TIMESTEP";
 
 const GRAVITATIONAL_CONSTANT: f32 = 6.674e-10_f32;
 
+const DEFAULT_PRECISION: u32 = 128;
+
 #[derive(Component)]
 pub struct Simulated(pub String);
 
@@ -17,7 +19,107 @@ pub struct Gravity;
 pub struct PhysicalProperties {
     pub mass: Float,
     pub estimated_radius: Float,
-    pub acceleration: Vec3,
+    pub acceleration: HPVec3,
+    pub translation: HPVec3,
+}
+
+/// High Precision Vec3 for floating point calculations.
+#[derive(Clone, Debug)]
+pub struct HPVec3 {
+    x: Float,
+    y: Float,
+    z: Float,
+}
+
+impl HPVec3 {
+    pub fn add(a: &HPVec3, b: &HPVec3) -> HPVec3 {
+        HPVec3::new(
+            Float::with_val(DEFAULT_PRECISION, &a.x + &b.x),
+            Float::with_val(DEFAULT_PRECISION, &a.y + &b.y),
+            Float::with_val(DEFAULT_PRECISION, &a.z + &b.z),
+        )
+    }
+
+    pub fn add_self(&mut self, b: &HPVec3) {
+        self.x = Float::with_val(DEFAULT_PRECISION, &self.x + &b.x);
+        self.y = Float::with_val(DEFAULT_PRECISION, &self.y + &b.y);
+        self.z = Float::with_val(DEFAULT_PRECISION, &self.z + &b.z);
+    }
+
+    pub fn sub(a: &HPVec3, b: &HPVec3) -> HPVec3 {
+        HPVec3::new(
+            Float::with_val(DEFAULT_PRECISION, &a.x - &b.x),
+            Float::with_val(DEFAULT_PRECISION, &a.y - &b.y),
+            Float::with_val(DEFAULT_PRECISION, &a.z - &b.z),
+        )
+    }
+
+    pub fn sub_self(&mut self, b: &HPVec3) {
+        self.x = Float::with_val(DEFAULT_PRECISION, &self.x - &b.x);
+        self.y = Float::with_val(DEFAULT_PRECISION, &self.y - &b.y);
+        self.z = Float::with_val(DEFAULT_PRECISION, &self.z - &b.z);
+    }
+
+    pub fn scalar_mul(a: &HPVec3, b: &Float) -> HPVec3 {
+        HPVec3::new(
+            Float::with_val(DEFAULT_PRECISION, &a.x * b),
+            Float::with_val(DEFAULT_PRECISION, &a.y * b),
+            Float::with_val(DEFAULT_PRECISION, &a.z * b),
+        )
+    }
+
+    pub fn mul(a: &HPVec3, b: &HPVec3) -> HPVec3 {
+        HPVec3::new(
+            Float::with_val(DEFAULT_PRECISION, &a.x * &b.x),
+            Float::with_val(DEFAULT_PRECISION, &a.y * &b.y),
+            Float::with_val(DEFAULT_PRECISION, &a.z * &b.z),
+        )
+    }
+
+    pub fn distance(&mut self, b: &HPVec3) -> Float {
+        (Float::with_val(DEFAULT_PRECISION, &self.x - &b.x).square()
+            + Float::with_val(DEFAULT_PRECISION, &self.y - &b.y).square()
+            + Float::with_val(DEFAULT_PRECISION, &self.z - &b.z).square())
+        .sqrt()
+    }
+
+    pub fn normalize(&self) -> HPVec3 {
+        let magnitude = (Float::with_val(DEFAULT_PRECISION, self.x.square_ref())
+            + Float::with_val(DEFAULT_PRECISION, self.y.square_ref())
+            + Float::with_val(DEFAULT_PRECISION, self.z.square_ref()))
+        .sqrt();
+
+        HPVec3 {
+            x: Float::with_val(DEFAULT_PRECISION, &self.x / &magnitude),
+            y: Float::with_val(DEFAULT_PRECISION, &self.y / &magnitude),
+            z: Float::with_val(DEFAULT_PRECISION, &self.z / &magnitude),
+        }
+    }
+
+    #[inline(always)]
+    pub fn new(x: Float, y: Float, z: Float) -> HPVec3 {
+        HPVec3 { x, y, z }
+    }
+
+    pub fn zero() -> HPVec3 {
+        HPVec3 {
+            x: Float::with_val(DEFAULT_PRECISION, 0.0),
+            y: Float::with_val(DEFAULT_PRECISION, 0.0),
+            z: Float::with_val(DEFAULT_PRECISION, 0.0),
+        }
+    }
+
+    pub fn to_vec3(&self) -> Vec3 {
+        Vec3::new(self.x.to_f32(), self.y.to_f32(), self.z.to_f32())
+    }
+
+    pub fn from_vec3(vec: &Vec3) -> HPVec3 {
+        HPVec3 {
+            x: Float::with_val(DEFAULT_PRECISION, vec.x),
+            y: Float::with_val(DEFAULT_PRECISION, vec.y),
+            z: Float::with_val(DEFAULT_PRECISION, vec.z),
+        }
+    }
 }
 
 /// Forces are not applied to this object, but it's physical properties can still be simulated.
@@ -37,7 +139,7 @@ impl Plugin for SimulationPlugin {
             CoreStage::Update,
             SimulationUpdateStage,
             SystemStage::parallel()
-                .with_run_criteria(FixedTimestep::step(1. / 10.).with_label(LABEL))
+                .with_run_criteria(FixedTimestep::step(1. / 1000.).with_label(LABEL))
                 .with_system(simulation_step.exclusive_system()),
         );
     }
@@ -56,41 +158,46 @@ pub fn simulation_step(
     ) = combinations.fetch_next()
     {
         // grab the distance between the physical objects
-        let distance = a_transform.translation.distance(b_transform.translation);
+        let distance = a_properties.translation.distance(&b_properties.translation);
 
         // get the normalized direction vectors
-        let ab_direction_vec = (b_transform.translation - a_transform.translation).normalize();
-        let ba_direction_vec = (a_transform.translation - b_transform.translation).normalize();
+        let ab_direction_vec =
+            HPVec3::sub(&b_properties.translation, &a_properties.translation).normalize();
+        let ba_direction_vec =
+            HPVec3::sub(&a_properties.translation, &b_properties.translation).normalize();
 
         // get the force between the two simulated entities.
         let force =
             (GRAVITATIONAL_CONSTANT * a_properties.mass.clone() * b_properties.mass.clone())
-                / Float::with_val(128, distance.powi(2));
+                / distance.square();
 
         // find the acceleration
-        let a_acceleration =
-            (force.clone() * a_properties.mass.clone()) / a_properties.estimated_radius.clone();
-        let b_acceleration =
-            (force.clone() * b_properties.mass.clone()) / b_properties.estimated_radius.clone();
+        let a_acceleration = force.clone() / a_properties.mass.clone();
+        let b_acceleration = force.clone() / b_properties.mass.clone();
 
-        println!("{:?} {:?}", force.clone(), a_properties.mass);
-
-        let a_acceleration_vec = ab_direction_vec * a_acceleration.to_f32();
-        let b_acceleration_vec = ba_direction_vec * b_acceleration.to_f32();
+        let a_acceleration_vec = HPVec3::scalar_mul(&ab_direction_vec, &a_acceleration);
+        let b_acceleration_vec = HPVec3::scalar_mul(&ba_direction_vec, &b_acceleration);
 
         // apply previous acceleration
         if let Ok(ref_entity) = reference {
             if ref_entity != a_entity {
-                a_transform.translation = a_transform.translation + a_properties.acceleration;
+                a_properties.translation =
+                    HPVec3::add(&a_properties.translation, &a_properties.acceleration);
             }
 
             if ref_entity != b_entity {
-                b_transform.translation = b_transform.translation + b_properties.acceleration;
+                b_properties.translation =
+                    HPVec3::add(&b_properties.translation, &b_properties.acceleration);
             }
         }
 
         // set new acceleration
-        a_properties.acceleration = a_acceleration_vec;
-        b_properties.acceleration = b_acceleration_vec;
+        a_properties.acceleration.add_self(&a_acceleration_vec);
+        b_properties.acceleration.add_self(&b_acceleration_vec);
+
+        // engine floats are not precise enough for the calculations
+        // but precise enough to render visuals :D
+        a_transform.translation = a_properties.translation.to_vec3();
+        b_transform.translation = b_properties.translation.to_vec3();
     }
 }

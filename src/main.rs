@@ -18,9 +18,7 @@ mod ui;
 fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
-            title: "".to_string(),
-            width: 800.,
-            height: 800.,
+            title: "Orbital Simulations".to_string(),
             ..default()
         })
         .insert_resource(ClearColor(Color::rgb(0., 0., 0.)))
