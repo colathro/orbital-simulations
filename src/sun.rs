@@ -1,8 +1,9 @@
 use crate::simulation::{PhysicalProperties, ReferenceFrame, Simulated};
 use bevy::prelude::*;
+use rug::Float;
 
 /// Approximate radius of the earth in meters.
-const RADIUS: f32 = 696000000.;
+const RADIUS: f32 = 6.96e+8_f32;
 
 /// Approximate mass of the earth in kg.
 const MASS: f32 = 1.989e+30_f32;
@@ -17,8 +18,9 @@ pub fn setup_sun(mut commands: Commands, asset_server: Res<AssetServer>) {
             sun.spawn_scene(asset_server.load("models/SUN.glb#Scene0"));
         })
         .insert(PhysicalProperties {
-            mass: MASS,
-            estimated_radius: RADIUS,
+            mass: Float::with_val(128, MASS),
+            estimated_radius: Float::with_val(128, RADIUS),
+            acceleration: Vec3::ZERO,
         })
         .insert(Simulated("Sun".to_string()))
         .insert(ReferenceFrame);

@@ -66,7 +66,7 @@ pub fn pan_orbit_camera(
                 let _ = transform.looking_at(focused_transform.translation, Vec3::Y);
                 if input_keyboard.pressed(KeyCode::Space) {
                     transform.translation = focused_transform.translation;
-                    orbit_cam.radius = physical_properties.estimated_radius * 4.;
+                    orbit_cam.radius = physical_properties.estimated_radius.to_f32() * 4.;
                     scroll += 0.000001;
                 }
             }
