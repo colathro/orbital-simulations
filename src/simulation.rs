@@ -1,4 +1,5 @@
 use bevy::{core::FixedTimestep, prelude::*};
+use bevy_inspector_egui::Inspectable;
 use rug::Float;
 
 const LABEL: &str = "SIMULATION_TIMESTEP";

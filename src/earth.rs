@@ -1,4 +1,4 @@
-use crate::camera::Focused;
+use crate::camera::{Focusable, Focused};
 use crate::simulation::{HPVec3, PhysicalProperties, Simulated};
 use bevy::prelude::*;
 use rug::Float;
@@ -38,6 +38,7 @@ pub fn setup_earth(mut commands: Commands, asset_server: Res<AssetServer>) {
             translation: HPVec3::from_vec3(&translation),
         })
         .insert(Focused)
+        .insert(Focusable)
         .with_children(|earth| {
             earth.spawn_scene(asset_server.load("models/earth_1x.glb#Scene0"));
         });

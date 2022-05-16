@@ -2,6 +2,7 @@ use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
     prelude::*,
 };
+use bevy_inspector_egui::Inspectable;
 
 use crate::{earth::DISTANCE_FROM_SUN, simulation::PhysicalProperties};
 
@@ -27,8 +28,14 @@ impl Default for PanOrbitCamera {
     }
 }
 
-#[derive(Component)]
+#[derive(Default)]
+pub struct FocusIndex(pub i32);
+
+#[derive(Component, Inspectable, Default)]
 pub struct Focused;
+
+#[derive(Component, Inspectable, Default)]
+pub struct Focusable;
 
 /// Pan the camera with middle mouse click, zoom with scroll wheel, orbit with right mouse click.
 pub fn pan_orbit_camera(
@@ -110,6 +117,31 @@ pub fn pan_orbit_camera(
         let rot_matrix = Mat3::from_quat(transform.rotation);
         transform.translation =
             orbit_cam.focus + rot_matrix.mul_vec3(Vec3::new(0.0, 0.0, orbit_cam.radius));
+    }
+}
+
+pub fn switch_focus(
+    mut commands: Commands,
+    focus_index: Res<FocusIndex>,
+    input_keyboard: Res<Input<KeyCode>>,
+    focusable_query: Query<Entity, With<Focusable>>,
+) {
+    if input_keyboard.just_pressed(KeyCode::Right) {
+        let count = focusable_query.iter().count() as i32;
+
+        let target_item = focus_index.0.abs() % count;
+        let target_entity = focusable_query.iter().nth(target_item as usize).unwrap();
+
+        for focusable in focusable_query.iter() {
+            commands.entity(focusable).remove::<Focused>();
+
+            if focusable == target_entity {
+                commands.entity(target_entity).insert(Focused);
+            }
+        }
+
+        let new_index = focus_index.0 + 1;
+        commands.insert_resource(FocusIndex(new_index));
     }
 }
 

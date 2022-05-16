@@ -1,4 +1,7 @@
-use crate::simulation::{HPVec3, PhysicalProperties, ReferenceFrame, Simulated};
+use crate::{
+    camera::Focusable,
+    simulation::{HPVec3, PhysicalProperties, ReferenceFrame, Simulated},
+};
 use bevy::prelude::*;
 use rug::Float;
 
@@ -24,7 +27,8 @@ pub fn setup_sun(mut commands: Commands, asset_server: Res<AssetServer>) {
             translation: HPVec3::zero(),
         })
         .insert(Simulated("Sun".to_string()))
-        .insert(ReferenceFrame);
+        .insert(ReferenceFrame)
+        .insert(Focusable);
 
     const HALF_SIZE: f32 = 10.0;
     commands.spawn_bundle(DirectionalLightBundle {

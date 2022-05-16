@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.7"
+bevy-inspector-egui = "0.10.0"
 rug = "1.16.0"
 
 # Enable only a small amount of optimization in debug mode
