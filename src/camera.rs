@@ -87,9 +87,7 @@ pub fn pan_orbit_camera(
             orbit_cam.upside_down = up.y <= 0.0;
         }
 
-        let mut any = false;
         if rotation_move.length_squared() > 0.0 {
-            any = true;
             let window = get_primary_window_size(&windows);
             let delta_x = {
                 let delta = rotation_move.x / window.x * std::f32::consts::PI * 2.0;
@@ -105,7 +103,6 @@ pub fn pan_orbit_camera(
             transform.rotation = yaw * transform.rotation; // rotate around global y axis
             transform.rotation = transform.rotation * pitch; // rotate around local x axis
         } else if scroll.abs() > 0.0 {
-            any = true;
             orbit_cam.radius -= scroll * orbit_cam.radius * 0.01;
             // dont allow zoom to reach zero or you get stuck
             orbit_cam.radius = f32::max(orbit_cam.radius, 0.05);

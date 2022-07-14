@@ -12,6 +12,9 @@ const MASS: f32 = 5.972e+24_f32; // 5.972e+24_f32;
 /// Approximate distance from the sun to earth in meters.
 pub const DISTANCE_FROM_SUN: f32 = 150_000_000_000.;
 
+/// Approximate current acceleration force applied to the earth
+pub const INITIAL_ACCELERATION: f32 = 107_226.;
+
 //1989000000000000000000000000000
 //5972000000000000000000000
 #[derive(Component)]
@@ -34,7 +37,7 @@ pub fn setup_earth(mut commands: Commands, asset_server: Res<AssetServer>) {
         .insert(PhysicalProperties {
             mass: Float::with_val(128, MASS.clone()),
             estimated_radius: Float::with_val(128, RADIUS.clone()),
-            acceleration: HPVec3::zero(),
+            acceleration: HPVec3::from_vec3(&Vec3::new(0., 0., INITIAL_ACCELERATION)),
             translation: HPVec3::from_vec3(&translation),
         })
         .insert(Focused)

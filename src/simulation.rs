@@ -1,8 +1,7 @@
 use bevy::{core::FixedTimestep, prelude::*};
-use bevy_inspector_egui::Inspectable;
 use rug::Float;
 
-const LABEL: &str = "SIMULATION_TIMESTEP";
+pub const LABEL: &str = "SIMULATION_TIMESTEP";
 
 const GRAVITATIONAL_CONSTANT: f32 = 6.674e-10_f32;
 
@@ -55,25 +54,11 @@ impl HPVec3 {
         )
     }
 
-    pub fn sub_self(&mut self, b: &HPVec3) {
-        self.x = Float::with_val(DEFAULT_PRECISION, &self.x - &b.x);
-        self.y = Float::with_val(DEFAULT_PRECISION, &self.y - &b.y);
-        self.z = Float::with_val(DEFAULT_PRECISION, &self.z - &b.z);
-    }
-
     pub fn scalar_mul(a: &HPVec3, b: &Float) -> HPVec3 {
         HPVec3::new(
             Float::with_val(DEFAULT_PRECISION, &a.x * b),
             Float::with_val(DEFAULT_PRECISION, &a.y * b),
             Float::with_val(DEFAULT_PRECISION, &a.z * b),
-        )
-    }
-
-    pub fn mul(a: &HPVec3, b: &HPVec3) -> HPVec3 {
-        HPVec3::new(
-            Float::with_val(DEFAULT_PRECISION, &a.x * &b.x),
-            Float::with_val(DEFAULT_PRECISION, &a.y * &b.y),
-            Float::with_val(DEFAULT_PRECISION, &a.z * &b.z),
         )
     }
 
@@ -139,7 +124,7 @@ impl Plugin for SimulationPlugin {
         app.add_stage_after(
             CoreStage::Update,
             SimulationUpdateStage,
-            SystemStage::parallel()
+            SystemStage::single_threaded()
                 .with_run_criteria(FixedTimestep::step(1. / 1000.).with_label(LABEL))
                 .with_system(simulation_step.exclusive_system()),
         );
