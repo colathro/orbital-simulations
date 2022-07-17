@@ -1,5 +1,6 @@
 use crate::camera::{Focusable, Focused};
 use crate::simulation::{HPVec3, PhysicalProperties, Simulated};
+use crate::ui::RenderInUI;
 use bevy::prelude::*;
 use rug::Float;
 
@@ -33,7 +34,8 @@ pub fn setup_earth(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         })
         .insert(Earth)
-        .insert(Simulated("Earth".to_string()))
+        .insert(RenderInUI("Earth".to_string()))
+        .insert(Simulated)
         .insert(PhysicalProperties {
             mass: Float::with_val(128, MASS.clone()),
             estimated_radius: Float::with_val(128, RADIUS.clone()),

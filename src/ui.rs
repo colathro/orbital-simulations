@@ -5,13 +5,19 @@ use bevy::{
     prelude::*,
 };
 
-use crate::simulation::Simulated;
+use crate::simulation::PhysicalProperties;
+
+#[derive(Component)]
+pub struct RenderInUI(pub String);
 
 #[derive(Component)]
 struct FpsText;
 
 #[derive(Component)]
 struct PositionText;
+
+#[derive(Component)]
+struct VelocityText;
 
 #[derive(Component)]
 struct RootNode;
@@ -23,8 +29,8 @@ impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(FrameTimeDiagnosticsPlugin::default());
         app.add_startup_system(setup_ui);
-        app.add_system(update_fps);
-        app.add_system(update_positions_of_gravity_components);
+        //app.add_system(update_fps);
+        app.add_system(update_positions_of_simulated_components);
     }
 }
 
@@ -92,25 +98,35 @@ fn update_fps(diagnostics: Res<Diagnostics>, mut query: Query<&mut Text, With<Fp
     }
 }
 
-fn update_positions_of_gravity_components(
+fn update_positions_of_simulated_components(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    gravity_query: Query<(&Transform, &Simulated)>,
-    mut text_query: Query<&mut Text, With<PositionText>>,
+    gravity_query: Query<(&PhysicalProperties, &RenderInUI)>,
+    mut ptext_query: Query<&mut Text, (With<PositionText>, Without<VelocityText>)>,
+    mut vtext_query: Query<&mut Text, (With<VelocityText>, Without<PositionText>)>,
     mut root_query: Query<Entity, With<RootNode>>,
 ) {
-    let mut entities: HashMap<String, Transform> = HashMap::new();
+    let mut entities: HashMap<String, &PhysicalProperties> = HashMap::new();
 
-    for (transform, simulated) in gravity_query.iter() {
-        entities.insert(simulated.0.clone(), *transform);
+    for (p_props, simulated) in gravity_query.iter() {
+        entities.insert(simulated.0.clone(), &p_props);
     }
 
-    for mut text in text_query.iter_mut() {
+    for mut text in ptext_query.iter_mut() {
         if entities.contains_key(&text.sections[0].value) {
-            let transform = entities[&text.sections[0].value];
-            text.sections[1].value = format!("{:}", transform.translation.x);
-            text.sections[2].value = format!("{:}", transform.translation.y);
-            text.sections[3].value = format!("{:}", transform.translation.z);
+            let p_props = entities[&text.sections[0].value];
+            text.sections[1].value = format!("{:}", p_props.translation.x);
+            text.sections[2].value = format!("{:}", p_props.translation.y);
+            text.sections[3].value = format!("{:}", p_props.translation.z);
+        }
+    }
+
+    for mut text in vtext_query.iter_mut() {
+        if entities.contains_key(&text.sections[0].value) {
+            let p_props = entities[&text.sections[0].value];
+            text.sections[1].value = format!("{:}", p_props.acceleration.x);
+            text.sections[2].value = format!("{:}", p_props.acceleration.y);
+            text.sections[3].value = format!("{:}", p_props.acceleration.z);
 
             entities.remove(&text.sections[0].value);
         }
@@ -171,6 +187,54 @@ fn update_positions_of_gravity_components(
                     ..default()
                 })
                 .insert(PositionText);
+            parent
+                .spawn_bundle(TextBundle {
+                    style: Style {
+                        align_self: AlignSelf::FlexStart,
+                        ..default()
+                    },
+                    // Use `Text` directly
+                    text: Text {
+                        // Construct a `Vec` of `TextSection`s
+                        sections: vec![
+                            TextSection {
+                                value: format!("{}", simulated),
+                                style: TextStyle {
+                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font_size: 24.0,
+                                    color: Color::WHITE,
+                                },
+                            },
+                            TextSection {
+                                value: "-".to_string(),
+                                style: TextStyle {
+                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font_size: 24.0,
+                                    color: Color::RED,
+                                },
+                            },
+                            TextSection {
+                                value: "-".to_string(),
+                                style: TextStyle {
+                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font_size: 24.0,
+                                    color: Color::GREEN,
+                                },
+                            },
+                            TextSection {
+                                value: "-".to_string(),
+                                style: TextStyle {
+                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font_size: 24.0,
+                                    color: Color::BLUE,
+                                },
+                            },
+                        ],
+                        ..default()
+                    },
+                    ..default()
+                })
+                .insert(VelocityText);
         });
     }
 }

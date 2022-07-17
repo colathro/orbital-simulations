@@ -26,7 +26,7 @@ pub fn setup_sun(mut commands: Commands, asset_server: Res<AssetServer>) {
             acceleration: HPVec3::zero(),
             translation: HPVec3::zero(),
         })
-        .insert(Simulated("Sun".to_string()))
+        .insert(Simulated)
         .insert(ReferenceFrame)
         .insert(Focusable);
 

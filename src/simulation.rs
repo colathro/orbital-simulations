@@ -8,7 +8,7 @@ const GRAVITATIONAL_CONSTANT: f32 = 6.674e-10_f32;
 const DEFAULT_PRECISION: u32 = 128;
 
 #[derive(Component)]
-pub struct Simulated(pub String);
+pub struct Simulated;
 
 /// Entities with this component are targeted by the gravity caluclation system.
 #[derive(Component)]
@@ -26,9 +26,9 @@ pub struct PhysicalProperties {
 /// High Precision Vec3 for floating point calculations.
 #[derive(Clone, Debug)]
 pub struct HPVec3 {
-    x: Float,
-    y: Float,
-    z: Float,
+    pub x: Float,
+    pub y: Float,
+    pub z: Float,
 }
 
 impl HPVec3 {
@@ -125,7 +125,7 @@ impl Plugin for SimulationPlugin {
             CoreStage::Update,
             SimulationUpdateStage,
             SystemStage::single_threaded()
-                .with_run_criteria(FixedTimestep::step(1. / 1000.).with_label(LABEL))
+                .with_run_criteria(FixedTimestep::step(1. / 10000.).with_label(LABEL))
                 .with_system(simulation_step.exclusive_system()),
         );
     }
