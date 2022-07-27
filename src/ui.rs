@@ -4,6 +4,7 @@ use bevy::{
     diagnostic::{Diagnostics, FrameTimeDiagnosticsPlugin},
     prelude::*,
 };
+use rug::Float;
 
 use crate::simulation::PhysicalProperties;
 
@@ -115,18 +116,18 @@ fn update_positions_of_simulated_components(
     for mut text in ptext_query.iter_mut() {
         if entities.contains_key(&text.sections[0].value) {
             let p_props = entities[&text.sections[0].value];
-            text.sections[1].value = format!("{:}", p_props.translation.x);
-            text.sections[2].value = format!("{:}", p_props.translation.y);
-            text.sections[3].value = format!("{:}", p_props.translation.z);
+            text.sections[2].value = float_display(&p_props.translation.x);
+            text.sections[3].value = float_display(&p_props.translation.y);
+            text.sections[4].value = float_display(&p_props.translation.z);
         }
     }
 
     for mut text in vtext_query.iter_mut() {
         if entities.contains_key(&text.sections[0].value) {
             let p_props = entities[&text.sections[0].value];
-            text.sections[1].value = format!("{:}", p_props.acceleration.x);
-            text.sections[2].value = format!("{:}", p_props.acceleration.y);
-            text.sections[3].value = format!("{:}", p_props.acceleration.z);
+            text.sections[2].value = float_display(&p_props.acceleration.x);
+            text.sections[3].value = float_display(&p_props.acceleration.y);
+            text.sections[4].value = float_display(&p_props.acceleration.z);
 
             entities.remove(&text.sections[0].value);
         }
@@ -151,6 +152,14 @@ fn update_positions_of_simulated_components(
                         sections: vec![
                             TextSection {
                                 value: format!("{}", simulated),
+                                style: TextStyle {
+                                    font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
+                                    font_size: 24.0,
+                                    color: Color::WHITE,
+                                },
+                            },
+                            TextSection {
+                                value: " Translation".to_string(),
                                 style: TextStyle {
                                     font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
                                     font_size: 24.0,
@@ -206,6 +215,14 @@ fn update_positions_of_simulated_components(
                                 },
                             },
                             TextSection {
+                                value: " Velocity".to_string(),
+                                style: TextStyle {
+                                    font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
+                                    font_size: 24.0,
+                                    color: Color::WHITE,
+                                },
+                            },
+                            TextSection {
                                 value: "-".to_string(),
                                 style: TextStyle {
                                     font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
@@ -237,4 +254,10 @@ fn update_positions_of_simulated_components(
                 .insert(VelocityText);
         });
     }
+}
+
+fn float_display(float: &Float) -> String {
+    let mut disp = format!("{:}", float);
+    disp.truncate(15);
+    disp
 }
