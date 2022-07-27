@@ -14,6 +14,11 @@ pub struct Simulated;
 #[derive(Component)]
 pub struct Gravity;
 
+#[derive(Component)]
+pub struct Rotating {
+    pub degrees_per_second: Float,
+}
+
 /// Entities with this component have mass, which is required for gravity calculations.
 #[derive(Component)]
 pub struct PhysicalProperties {
@@ -121,13 +126,15 @@ pub struct SimulationPlugin;
 
 impl Plugin for SimulationPlugin {
     fn build(&self, app: &mut App) {
-        app.add_stage_after(
+        /*         app.add_stage_after(
             CoreStage::Update,
             SimulationUpdateStage,
             SystemStage::single_threaded()
                 .with_run_criteria(FixedTimestep::step(1. / 10000.).with_label(LABEL))
                 .with_system(simulation_step.exclusive_system()),
-        );
+        ); */
+        app.add_system(simulation_step);
+        app.add_system(rotation_step);
     }
 }
 
@@ -185,5 +192,13 @@ pub fn simulation_step(
         // but precise enough to render visuals :D
         a_transform.translation = a_properties.translation.to_vec3();
         b_transform.translation = b_properties.translation.to_vec3();
+    }
+}
+
+fn rotation_step(mut rot_query: Query<(&Rotating, &mut Transform), With<Rotating>>) {
+    for (rot, mut transform) in rot_query.iter_mut() {
+        let mut euler_rot = transform.rotation.to_euler(EulerRot::ZXY);
+        euler_rot.2 += rot.degrees_per_second.to_f32();
+        transform.rotation = Quat::from_euler(EulerRot::ZXY, euler_rot.0, euler_rot.1, euler_rot.2)
     }
 }

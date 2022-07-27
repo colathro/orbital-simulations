@@ -1,6 +1,7 @@
 use crate::camera::{Focusable, Focused};
-use crate::simulation::{HPVec3, PhysicalProperties, Simulated};
+use crate::simulation::{HPVec3, PhysicalProperties, Rotating, Simulated};
 use crate::ui::RenderInUI;
+use bevy::core::Zeroable;
 use bevy::prelude::*;
 use rug::Float;
 
@@ -16,6 +17,8 @@ pub const DISTANCE_FROM_SUN: f32 = 150_000_000_000.;
 /// Approximate current acceleration force applied to the earth
 pub const INITIAL_ACCELERATION: f32 = 107_226.;
 
+pub const DEGREES_PER_SECOND: f32 = 0.00416666;
+
 //1989000000000000000000000000000
 //5972000000000000000000000
 #[derive(Component)]
@@ -29,13 +32,15 @@ pub fn setup_earth(mut commands: Commands, asset_server: Res<AssetServer>) {
                 translation: translation,
                 rotation: Quat::from_rotation_z(0.4101524),
                 scale: Vec3::new(RADIUS * 2., RADIUS * 2., RADIUS * 2.),
-                ..default()
             },
             ..default()
         })
         .insert(Earth)
         .insert(RenderInUI("Earth".to_string()))
         .insert(Simulated)
+        .insert(Rotating {
+            degrees_per_second: Float::with_val(128, DEGREES_PER_SECOND),
+        })
         .insert(PhysicalProperties {
             mass: Float::with_val(128, MASS.clone()),
             estimated_radius: Float::with_val(128, RADIUS.clone()),

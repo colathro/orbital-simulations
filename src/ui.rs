@@ -29,7 +29,7 @@ impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(FrameTimeDiagnosticsPlugin::default());
         app.add_startup_system(setup_ui);
-        //app.add_system(update_fps);
+        app.add_system(update_fps);
         app.add_system(update_positions_of_simulated_components);
     }
 }
@@ -65,7 +65,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                             TextSection {
                                 value: "FPS: ".to_string(),
                                 style: TextStyle {
-                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
                                     font_size: 24.0,
                                     color: Color::WHITE,
                                 },
@@ -73,7 +73,7 @@ fn setup_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                             TextSection {
                                 value: "".to_string(),
                                 style: TextStyle {
-                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
                                     font_size: 24.0,
                                     color: Color::GOLD,
                                 },
@@ -152,7 +152,7 @@ fn update_positions_of_simulated_components(
                             TextSection {
                                 value: format!("{}", simulated),
                                 style: TextStyle {
-                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
                                     font_size: 24.0,
                                     color: Color::WHITE,
                                 },
@@ -160,7 +160,7 @@ fn update_positions_of_simulated_components(
                             TextSection {
                                 value: "-".to_string(),
                                 style: TextStyle {
-                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
                                     font_size: 24.0,
                                     color: Color::RED,
                                 },
@@ -168,7 +168,7 @@ fn update_positions_of_simulated_components(
                             TextSection {
                                 value: "-".to_string(),
                                 style: TextStyle {
-                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
                                     font_size: 24.0,
                                     color: Color::GREEN,
                                 },
@@ -176,7 +176,7 @@ fn update_positions_of_simulated_components(
                             TextSection {
                                 value: "-".to_string(),
                                 style: TextStyle {
-                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
                                     font_size: 24.0,
                                     color: Color::BLUE,
                                 },
@@ -200,7 +200,7 @@ fn update_positions_of_simulated_components(
                             TextSection {
                                 value: format!("{}", simulated),
                                 style: TextStyle {
-                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
                                     font_size: 24.0,
                                     color: Color::WHITE,
                                 },
@@ -208,7 +208,7 @@ fn update_positions_of_simulated_components(
                             TextSection {
                                 value: "-".to_string(),
                                 style: TextStyle {
-                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
                                     font_size: 24.0,
                                     color: Color::RED,
                                 },
@@ -216,7 +216,7 @@ fn update_positions_of_simulated_components(
                             TextSection {
                                 value: "-".to_string(),
                                 style: TextStyle {
-                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
                                     font_size: 24.0,
                                     color: Color::GREEN,
                                 },
@@ -224,7 +224,7 @@ fn update_positions_of_simulated_components(
                             TextSection {
                                 value: "-".to_string(),
                                 style: TextStyle {
-                                    font: asset_server.load("fonts/AstroSpace.ttf"),
+                                    font: asset_server.load("fonts/UbuntuMono-Regular.ttf"),
                                     font_size: 24.0,
                                     color: Color::BLUE,
                                 },
